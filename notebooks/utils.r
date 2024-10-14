@@ -1,5 +1,5 @@
 # Function to plot return level function
-display_return_level_function <- function(data, parameters, max_trend = 0, max_return_period = 100){
+display_return_level_function <- function(data, parameters, max_trend = 0, max_return_period = 100, m = 1000){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -18,7 +18,7 @@ display_return_level_function <- function(data, parameters, max_trend = 0, max_r
     data_maxima_sorted$year <- 1 / (1 - 1:n / (n + 1)) * block_size
     
     # Compute retrun level function
-    return_levels <- compute_return_level_function(model = model, parameters = parameters, n_obs = n, max_trend = max_trend, max_return_period = max(2  * n,max_return_period))
+    return_levels <- compute_return_level_function(model = model, parameters = parameters, n_obs = n, max_trend = max_trend, max_return_period = max(2  * n,max_return_period), m = m)
     
     # Create return level function plot
     p <- ggplot() +
@@ -34,7 +34,7 @@ display_return_level_function <- function(data, parameters, max_trend = 0, max_r
 }
 
 # Function to povide a return level and associated uncertainy for a given return period
-compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0){
+compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0, m = 1000){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -44,16 +44,14 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
     else if(identical(parameters_name, c("loc","scale","shape"))){model <- "GEV_MLE"}
     else {
     stop("Invalid model's parameters.")
-    }
-    print(model)
-    
+    }    
     
     # Compute return level from estimates
     if(model == "GEV_LMOM"){
     return_level <-  lmom::quagev(1 - 1 / (return_period / block_size), para = parameters) + max_trend
         }
     if(model == "Weibull"){
-    return_level <-  qweibull(p = 1 - 1 / (return_period / block_size), scale = parameters[2], shape = parameters[3]) + parameters[1] + max_trend
+    return_level <-  qweibull(p = 1 - 1 / (return_period / block_size), scale = parameters[2], shape = parameters[3]) + unname(parameters[1]) + max_trend
         }
     if(model == "P3"){
     return_level <-  lmom::quape3(1 - 1 / (return_period / block_size), para = parameters) + max_trend
@@ -62,9 +60,6 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
     return_level <- evd::qgev(p = 1 - 1 / (return_period / block_size), shape = parameters["shape"], loc = parameters["loc"], scale = parameters["scale"]) + max_trend
         }
     
-        
-        # Number of bootstrap samples
-    m <- 1000
     # Bootstrap matrix
     uncertainty_param_bootstrap <- rep(NA,m)
                                           
@@ -80,7 +75,7 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
         for(i in 1:m){
         lmom <- samlmu(qweibull(p = runif(n_obs), scale = parameters[2], shape = parameters[3]) + parameters[1])
             try(expr = {wei <- pelwei(lmom)
-        uncertainty_param_bootstrap[i] <- qweibull(p = 1 - 1 / (return_period / block_size), scale = wei[2], shape = wei[3]) + wei[1] + max_trend}, silent = TRUE)
+        uncertainty_param_bootstrap[i] <- qweibull(p = 1 - 1 / (return_period / block_size), scale = wei[2], shape = wei[3]) + unname(wei[1]) + max_trend}, silent = TRUE)
             }
     }
     if(model == "P3"){
@@ -101,12 +96,13 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
     return(data.frame(Return_period = return_period,
                      Return_level = return_level,
                      Lower_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.005, na.rm = TRUE),
-                     Upper_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE)))
+                     Upper_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE),
+          row.names=NULL))
 }
 
 
 # Function to compute the return level function and associated uncertainty
-compute_return_level_function <- function(model, parameters, n_obs, max_trend = 0, max_return_period = 99){
+compute_return_level_function <- function(model, parameters, n_obs, max_trend = 0, max_return_period = 99, m = 1000){
     #Compute return level as function of the model and the estimated parameters
     return_period_estimates <- data.frame(year = c(seq(1.01,1.9, by = 0.01) , 2:9, 1:9 * 10, max(100,max_return_period)) * block_size) 
     
@@ -114,7 +110,7 @@ compute_return_level_function <- function(model, parameters, n_obs, max_trend = 
     return_period_estimates$return_levels <-  lmom::quagev(1 - 1 / (return_period_estimates$year / block_size), para = parameters) + max_trend
         }
     if(model == "Weibull"){
-    return_period_estimates$return_levels <-  qweibull(p = 1 - 1 / (return_period_estimates$year / block_size), scale = parameters[2], shape = parameters[3]) + parameters[1] + max_trend
+    return_period_estimates$return_levels <-  qweibull(p = 1 - 1 / (return_period_estimates$year / block_size), scale = parameters[2], shape = parameters[3]) + unname(parameters[1]) + max_trend
         }
     if(model == "P3"){
     return_period_estimates$return_levels <-  lmom::quape3(1 - 1 / (return_period_estimates$year / block_size), para = parameters) + max_trend
@@ -123,8 +119,6 @@ compute_return_level_function <- function(model, parameters, n_obs, max_trend = 
     return_period_estimates$return_levels <- evd::qgev(p = 1 - 1 / (return_period_estimates$year / block_size), shape = parameters["shape"], loc = parameters["loc"], scale = parameters["scale"]) + max_trend
         }
     
-    # Number of bootstrap samples
-    m <- 1000
     # Bootstrap matrix
     uncertainty_param_bootstrap <- matrix(NA,m,length(return_period_estimates$year))
                                           
@@ -140,7 +134,7 @@ compute_return_level_function <- function(model, parameters, n_obs, max_trend = 
         for(i in 1:m){
         lmom <- samlmu(qweibull(p = runif(n_obs), scale = parameters[2], shape = parameters[3]) + parameters[1])
             try(expr = {wei <- pelwei(lmom)
-        uncertainty_param_bootstrap[i,] <- qweibull(p = 1 - 1 / (return_period_estimates$year / block_size), scale = wei[2], shape = wei[3]) + wei[1] + max_trend}, silent = TRUE)
+        uncertainty_param_bootstrap[i,] <- qweibull(p = 1 - 1 / (return_period_estimates$year / block_size), scale = wei[2], shape = wei[3]) + unname(wei[1]) + max_trend}, silent = TRUE)
             }
     }
     if(model == "P3"){
