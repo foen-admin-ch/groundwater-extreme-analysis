@@ -95,8 +95,8 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
     #Return result as dataframe
     return(data.frame(Return_period = return_period,
                      Return_level = return_level,
-                     Lower_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.005, na.rm = TRUE),
-                     Upper_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE),
+                     Lower_99_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.005, na.rm = TRUE),
+                     Upper_99_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE),
           row.names=NULL))
 }
 
