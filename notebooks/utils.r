@@ -12,10 +12,9 @@ display_return_level_function <- function(data, parameters, block_size = 1, max_
     }
     
     #Sort maxima data for visual checks
-    n <- length(data$Max_standardized)
-    data_maxima_sorted <-  data
-    data_maxima_sorted$Max <- sort(data$Max_standardized) + max_trend
-    data_maxima_sorted$year <- 1 / (1 - 1:n / (n + 1)) * block_size
+    n <- length(data)
+    data_maxima_sorted <-  data.frame(Max = sort(data) + max_trend,
+                                      year = 1 / (1 - 1:n / (n + 1)) * block_size)
     
     # Compute retrun level function
     return_levels <- compute_return_level_function(model = model, parameters = parameters, n_obs = n, block_size = block_size, max_trend = max_trend, max_return_period = max(2  * n,max_return_period), m = m)
