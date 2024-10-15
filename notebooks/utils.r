@@ -1,5 +1,5 @@
 # Function to plot return level function
-display_return_level_function <- function(data, parameters, max_trend = 0, max_return_period = 100, m = 1000){
+display_return_level_function <- function(data, parameters, block_size = 1, max_trend = 0, max_return_period = 100, m = 1000){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -18,7 +18,7 @@ display_return_level_function <- function(data, parameters, max_trend = 0, max_r
     data_maxima_sorted$year <- 1 / (1 - 1:n / (n + 1)) * block_size
     
     # Compute retrun level function
-    return_levels <- compute_return_level_function(model = model, parameters = parameters, n_obs = n, max_trend = max_trend, max_return_period = max(2  * n,max_return_period), m = m)
+    return_levels <- compute_return_level_function(model = model, parameters = parameters, n_obs = n, block_size = block_size, max_trend = max_trend, max_return_period = max(2  * n,max_return_period), m = m)
     
     # Create return level function plot
     p <- ggplot() +
@@ -34,7 +34,7 @@ display_return_level_function <- function(data, parameters, max_trend = 0, max_r
 }
 
 # Function to povide a return level and associated uncertainy for a given return period
-compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0, m = 1000){
+compute_return_level <- function(return_period, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -102,7 +102,7 @@ compute_return_level <- function(return_period, parameters, n_obs, max_trend = 0
 
 
 # Function to compute the return level function and associated uncertainty
-compute_return_level_function <- function(model, parameters, n_obs, max_trend = 0, max_return_period = 99, m = 1000){
+compute_return_level_function <- function(model, parameters, n_obs, block_size, max_trend = 0, max_return_period = 99, m = 1000){
     #Compute return level as function of the model and the estimated parameters
     return_period_estimates <- data.frame(year = c(seq(1.01,1.9, by = 0.01) , 2:9, 1:9 * 10, max(100,max_return_period)) * block_size) 
     
