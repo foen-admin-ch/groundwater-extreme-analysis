@@ -19,3 +19,11 @@ install.packages('lmom')
 # To estimate automatically trends from data
 install.packages('mgcv')
 
+# To create simple and beautiful plots
+install.packages('ggplot2')
+
+# To manipulate tabular data efficiently
+install.packages('dplyr')
+
+# To define plotting areas 
+install.packages('repr')
