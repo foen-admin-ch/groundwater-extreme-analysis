@@ -32,8 +32,26 @@ display_return_level_function <- function(data, parameters, block_size = 1, max_
     print(p)
 }
 
+# Function to compute returns levels and associated uncertainty for a vecotr of return periods
+compute_return_levels <- function(return_periods, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000){
+    
+    # Compute return levels for each return period    
+    results <- lapply(return_periods, compute_return_level_atom,
+                      parameters = parameters,
+                      n_obs = n_obs,
+                      block_size = block_size,
+                      max_trend = max_trend,
+                      m = m)
+    
+    #Return result as dataframe
+    levels <- data.frame(matrix(unlist(results), ncol = 4, byrow = TRUE))
+    names(levels) <- c("Return_period", "Lower_99_CI_bound", "Return_level", "Upper_99_CI_bound")
+    return(levels)
+     
+}
+
 # Function to povide a return level and associated uncertainy for a given return period
-compute_return_level <- function(return_period, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000){
+compute_return_level_atom <- function(return_period, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -91,12 +109,11 @@ compute_return_level <- function(return_period, parameters, n_obs, block_size = 
             }
     }
     
-    #Return result as dataframe
-    return(data.frame(Return_period = return_period,
-                     Return_level = return_level,
-                     Lower_99_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.005, na.rm = TRUE),
-                     Upper_99_CI_bound = quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE),
-          row.names=NULL))
+    #Return result as vector
+        return(c(return_period,
+                 quantile(uncertainty_param_bootstrap, p = 0.005, na.rm = TRUE),
+                 return_level,
+                 quantile(uncertainty_param_bootstrap, p = 0.995, na.rm = TRUE)))
 }
 
 
