@@ -1,5 +1,5 @@
 # Function to plot return level function
-display_return_level_function <- function(data, parameters, block_size = 1, max_trend = 0, max_return_period = 100, m = 1000){
+display_return_level_function <- function(data, parameters, block_size = 1, max_trend = 0, max_return_period = 100, m = 1000, multiplicative_factor = 1){
     # Determine model and estimation method
     parameters_name <- names(parameters)
 
@@ -21,10 +21,10 @@ display_return_level_function <- function(data, parameters, block_size = 1, max_
     
     # Create return level function plot
     p <- ggplot() +
-        geom_line(data = return_levels$return_period_estimates, aes(x = year, y = return_levels)) + 
-        geom_line(data = return_levels$model_uncertainty, aes(x = year, y = lower), linetype = "dotted", color = "black") +  
-        geom_line(data = return_levels$model_uncertainty, aes(x = year, y = upper), linetype = "dotted", color = "black") + 
-        geom_point(data = data_maxima_sorted, aes(x = year, y = Max)) +
+        geom_line(data = return_levels$return_period_estimates, aes(x = year, y = multiplicative_factor *  return_levels)) + 
+        geom_line(data = return_levels$model_uncertainty, aes(x = year, y = multiplicative_factor * lower), linetype = "dotted", color = "black") +  
+        geom_line(data = return_levels$model_uncertainty, aes(x = year, y = multiplicative_factor * upper), linetype = "dotted", color = "black") + 
+        geom_point(data = data_maxima_sorted, aes(x = year, y = multiplicative_factor * Max)) +
         scale_x_continuous(trans='log2', breaks = c(1,2,5,10,20, 50 ,100)) +
         geom_vline(xintercept = 10 , color = "red") + theme_classic() + theme(text = element_text(size = 20))+
         xlab("Return Period") + ylab("Return Level")
@@ -33,7 +33,7 @@ display_return_level_function <- function(data, parameters, block_size = 1, max_
 }
 
 # Function to compute returns levels and associated uncertainty for a vecotr of return periods
-compute_return_levels <- function(return_periods, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000){
+compute_return_levels <- function(return_periods, parameters, n_obs, block_size = 1, max_trend = 0, m = 1000, multiplicative_factor = 1){
     
     # Compute return levels for each return period    
     results <- lapply(return_periods, compute_return_level_atom,
@@ -46,6 +46,10 @@ compute_return_levels <- function(return_periods, parameters, n_obs, block_size 
     #Return result as dataframe
     levels <- data.frame(matrix(unlist(results), ncol = 4, byrow = TRUE))
     names(levels) <- c("Return_period", "Lower_99_CI_bound", "Return_level", "Upper_99_CI_bound")
+    buffer <- levels$Lower_99_CI_bound
+    levels$Lower_99_CI_bound <- multiplicative_factor * levels$Upper_99_CI_bound
+    levels$Return_level <- multiplicative_factor * levels$Return_level
+    levels$Upper_99_CI_bound <- multiplicative_factor * buffer
     return(levels)
      
 }
