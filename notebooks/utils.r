@@ -46,10 +46,12 @@ compute_return_levels <- function(return_periods, parameters, n_obs, block_size 
     #Return result as dataframe
     levels <- data.frame(matrix(unlist(results), ncol = 4, byrow = TRUE))
     names(levels) <- c("Return_period", "Lower_99_CI_bound", "Return_level", "Upper_99_CI_bound")
-    buffer <- levels$Lower_99_CI_bound
-    levels$Lower_99_CI_bound <- multiplicative_factor * levels$Upper_99_CI_bound
-    levels$Return_level <- multiplicative_factor * levels$Return_level
-    levels$Upper_99_CI_bound <- multiplicative_factor * buffer
+    if(multiplicative_factor == -1){
+        buffer <- levels$Lower_99_CI_bound
+        levels$Lower_99_CI_bound <- multiplicative_factor * levels$Upper_99_CI_bound
+        levels$Return_level <- multiplicative_factor * levels$Return_level
+        levels$Upper_99_CI_bound <- multiplicative_factor * buffer
+        }
     return(levels)
      
 }
