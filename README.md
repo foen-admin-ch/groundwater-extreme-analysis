@@ -8,9 +8,9 @@ The examples take the form of Jupyter Notebooks that allow to alternate between 
 
 ## Running Notebooks using Renkulab
 
-The simplest way to run the notebooks is to use Renkulab. This service not only allows sharing code but also gives the opportunity to run and reproduce the results.
+The simplest way to run the notebooks is to use [Renkulab](https://renkulab.io). This service allows to run and reproduce the results without having to setup your own environment.
 
-Once logged into the platform Renku, the user can execute the notebooks using a computing environment provided by the platform called a session. The first step is to create your own copy of the project by clicking on the “fork” button. Once the project has been successfully forked, i.e., that you have you own copy of the project, you can simply click on the “Start” button to a JupyterLab environment that will allow you to run the notebooks without having to worry about installing any software and/or packages.
+Once logged into the platform Renku, the user can execute the notebooks using a computing environment provided by the platform called a session. From the [project page](https://renkulab.io/p/dscc/estimation-of-return-periods-of-the-groundwater-level), simply click on the “Launch” button to start a JupyterLab environment that will allow you to run the notebooks without having to worry about installing any software and/or packages.
 
 For a detailed presentation of Renkulab’s functionalities, extensive tutorials are available [here](https://docs.renkulab.io/en/stable/docs/users/getting-started/).
 
